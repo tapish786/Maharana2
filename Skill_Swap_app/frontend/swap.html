@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Swap Request</title>
+</head>
+<body>
+  <h2>Create Swap Request</h2>
+  <form id="swapForm">
+    Sender ID: <input type="number" id="sender_id"><br>
+    Receiver ID: <input type="number" id="receiver_id"><br>
+    Skill Offered: <input type="text" id="skill_offered"><br>
+    Skill Requested: <input type="text" id="skill_requested"><br>
+    Message: <input type="text" id="message"><br>
+    <button type="submit">Send Swap</button>
+  </form>
+
+  <hr>
+
+  <h2>All Swap Requests</h2>
+  <ul id="swapList"></ul>
+
+  <script>
+    // Submit swap request
+    document.getElementById('swapForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const res = await fetch('/swaps/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sender_id: document.getElementById('sender_id').value,
+          receiver_id: document.getElementById('receiver_id').value,
+          skill_offered: document.getElementById('skill_offered').value,
+          skill_requested: document.getElementById('skill_requested').value,
+          message: document.getElementById('message').value
+        })
+      });
+      const data = await res.json();
+      alert(data.message || data.error);
+      loadSwaps(); // refresh swap list
+    });
+
+    // Load all swaps
+    async function loadSwaps() {
+      const res = await fetch('/swaps/');
+      const data = await res.json();
+      const list = document.getElementById('swapList');
+      list.innerHTML = '';
+      data.forEach(swap => {
+        const item = document.createElement('li');
+        item.textContent = `Swap #${swap.id}: ${swap.skill_offered} → ${swap.skill_requested} (status: ${swap.status})`;
+        list.appendChild(item);
+      });
+    }
+
+    // Auto-load swap list on page load
+    loadSwaps();
+  </script>
+</body>
+</html>
